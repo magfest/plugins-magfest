@@ -63,15 +63,31 @@ def master_links(message):
         except:
             message.send("Unknown Error")
 
-b = "\\bbadges$"
+possible_ubers = {"labs":"https://labs.uber.magfest.org/uber/registration/stats", "stock":"https://magstock6.uber.magfest.org/uber/registration/stats",
+                  "prime":"https://prime.uber.magfest.org/uber/registration/stats"}
+
+b = "\\bbadges"
 @respond_to(b, re.IGNORECASE)
 #@listen_to(b, re.IGNORECASE)
 def badges(message):
     if is_approved(message, "any"):
-        try:
-            attempt = urllib2.urlopen("https://prime.uber.magfest.org/uber/registration/stats")
-            thing = (attempt.read())
-            info = json.loads(thing)
-            message.send("Badges Sold: %s\n Badges Remaining: %s" % (info['badges_sold'], info['remaining_badges']))
-        except KeyError:
-            message.send("Bad URL")
+        the_thing = str(message).partition("badges")[2].strip(" ").split(" ")
+        if len(the_thing) > 0:
+            for x in the_thing:
+                if x in possible_ubers.keys():
+                    try:
+                        attempt = urllib2.urlopen(possible_ubers[x])
+                        thing = (attempt.read())
+                        info = json.loads(thing)
+                        message.send("%s\nBadges Sold: %s\nBadges Remaining: %s" % (x, info['badges_sold'], info['remaining_badges']))
+                    except KeyError:
+                        message.send("Bad URL")
+
+        else:
+            try:
+                attempt = urllib2.urlopen(possible_ubers["prime"])
+                thing = (attempt.read())
+                info = json.loads(thing)
+                message.send("%s\nBadges Sold: %s\nBadges Remaining: %s" % ("Prime", info['badges_sold'], info['remaining_badges']))
+            except KeyError:
+                message.send("Bad URL")
