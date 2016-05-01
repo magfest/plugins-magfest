@@ -6,6 +6,7 @@ import urllib
 import urllib2
 import re
 import json, os
+from fuzzywuzzy import process, fuzz
 
 domain = "magfe.st"
 
@@ -63,7 +64,7 @@ def master_links(message):
         except:
             message.send("Unknown Error")
 
-possible_ubers = {"labs":"https://labs.uber.magfest.org/uber/registration/stats", "stock":"https://magstock6.uber.magfest.org/uber/registration/stats",
+possible_ubers = {"maglabs":"https://labs.uber.magfest.org/uber/registration/stats", "magstock":"https://magstock6.uber.magfest.org/uber/registration/stats",
                   "prime":"https://prime.uber.magfest.org/uber/registration/stats"}
 
 b = "\\bbadges"
@@ -71,15 +72,17 @@ b = "\\bbadges"
 #@listen_to(b, re.IGNORECASE)
 def badges(message):
     if is_approved(message, "any"):
-        the_thing = str(message).partition("badges")[2].strip(" ").split(" ")
+        the_thing = str(message.body['text']).partition("badges")[2].strip(" ").split(" ")
         if len(the_thing) > 0:
+
             for x in the_thing:
-                if x in possible_ubers.keys():
+                extract = process.extractOne(x, possible_ubers.keys(), score_cutoff=80)
+                if extract[0] is not None:
                     try:
-                        attempt = urllib2.urlopen(possible_ubers[x])
+                        attempt = urllib2.urlopen(possible_ubers[extract[0]])
                         thing = (attempt.read())
                         info = json.loads(thing)
-                        message.send("%s\nBadges Sold: %s\nBadges Remaining: %s" % (x, info['badges_sold'], info['remaining_badges']))
+                        message.send("%s\nBadges Sold: %s\nBadges Remaining: %s" % (extract[0].capitalize(), info['badges_sold'], info['remaining_badges']))
                     except KeyError:
                         message.send("Bad URL")
 
