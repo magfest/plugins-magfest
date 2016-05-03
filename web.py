@@ -39,16 +39,19 @@ def badges(message):
             for x in the_thing:
 
                 extract = process.extractOne(x, possible_ubers.keys())
-                partial_extract = fuzz.partial_ratio(x, extract[0])
-                if extract is not None and partial_extract > 85:
 
-                    try:
-                        attempt = urllib2.urlopen(possible_ubers[extract[0]])
-                        thing = (attempt.read())
-                        info = json.loads(thing)
-                        message.send("%s\nBadges Sold: %s\nBadges Remaining: %s" % (extract[0].capitalize(), info['badges_sold'], info['remaining_badges']))
-                    except KeyError:
-                        message.send("Bad URL")
+                if extract is not None:
+                    partial_extract = fuzz.partial_ratio(x, extract[0])
+                    if partial_extract > 85:
+                        try:
+                            attempt = urllib2.urlopen(possible_ubers[extract[0]])
+                            thing = (attempt.read())
+                            info = json.loads(thing)
+                            message.send("%s\nBadges Sold: %s\nBadges Remaining: %s" % (extract[0].capitalize(), info['badges_sold'], info['remaining_badges']))
+                        except KeyError:
+                            message.send("Bad URL")
+                    else:
+                        message.send("Event Not Found")
                 else:
                     message.send("Event Not Found")
 
