@@ -15,7 +15,7 @@ except KeyError:
     db = None
 
 try:
-    snakeman = attributes['jira']
+    snakeman = attributes['snakeman']
 except KeyError:
     snakeman = None
 
